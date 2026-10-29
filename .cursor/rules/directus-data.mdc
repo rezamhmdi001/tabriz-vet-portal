@@ -1,0 +1,52 @@
+---
+description: Directus reads go through web/lib/directus.ts, published rows only, with the three-tier academic identity.
+globs: ["web/**/*.ts", "web/**/*.tsx", "cms/**/*"]
+alwaysApply: true
+---
+
+# Directus data access
+
+Public content is read only from `web/lib/directus.ts`. That module starts with `import "server-only"`. Pages and server actions call its exports. Client components receive DTOs and do not fetch Directus.
+
+`web/lib/schema-org.ts` may format JSON-LD from those DTOs. It does not open its own Directus client.
+
+## Required filters
+
+- Every public query includes `status = "published"`.
+- `academic_profiles` has no status. Show a profile only with a published person.
+- Show a `role_assignments` row only when that row, its person, and its unit are published.
+- On `/en`, drop rows whose locale name is null or empty: `name_en` (units), `full_name_en` (people), `title_en` (programs, news, events, services, pages).
+- `/en` search uses `_icontains` on English fields only.
+
+```ts
+// Forbidden: token or URL in the client, draft rows included
+fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/items/people`)
+
+// Required: server module, published filter, collection tag
+directusFetch("/items/people", {
+  tags: ["directus", "people"],
+  filter: { status: { _eq: "published" } },
+})
+```
+
+## Tags and assets
+
+Every `directusFetch` sets `revalidate: 3600`, the tag `directus`, and one of: `organization-units`, `people`, `programs`, `news`, `events`, `services`, `pages`.
+
+`getAssetUrl(fileId, preset)` returns a same-origin URL with no token. Presets: `avatar` 400px WebP q80 without enlargement, `card` 800px WebP q80, `hero` 1600px WebP q82, `document` original PDF.
+
+`searchSiteContent(query, locale)` searches only `people`, `organization_units`, `programs`, and `news_articles`, after Zod limits the query to 2–80 characters.
+
+## Identity
+
+Keep the three tiers: `people`, `academic_profiles` (1:1), `role_assignments` (M:N). Rank, membership, degree, role category, and title prefix use the closed keys in `ARCHITECTURE.md`. Do not store Persian labels as the enum value.
+
+Do not hardcode people, departments, news, phones, or services. The department names in the architecture doc are examples, not a menu.
+
+## Schema.org
+
+Build `Person` from the three tiers. `sameAs` includes only non-empty ORCID (`https://orcid.org/{orcid_id}`), Google Scholar, Scopus, and ResearchGate. Do not invent identifiers.
+
+## Schema changes
+
+Do not add a collection or extra fields while Gate G0 is open. Snapshot to `cms/schema/snapshot.yaml` and update the types in the same change. The Public role stays with no access.

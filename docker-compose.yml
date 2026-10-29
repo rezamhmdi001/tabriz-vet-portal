@@ -1,0 +1,104 @@
+# Five services. Only proxy publishes ports.
+# Variable names match .env.example. The web service does not receive
+# POSTGRES_* or DIRECTUS_ADMIN_*.
+
+services:
+  proxy:
+    image: caddy:2.10
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - web
+      - cms
+    networks:
+      - edge
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      DIRECTUS_URL: http://cms:8055
+      DIRECTUS_READ_TOKEN: ${DIRECTUS_READ_TOKEN}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+    depends_on:
+      cms:
+        condition: service_healthy
+    networks:
+      - edge
+
+  cms:
+    image: directus/directus:12.5.0
+    volumes:
+      - ./cms/uploads:/directus/uploads
+      - ./cms/extensions:/directus/extensions
+    environment:
+      KEY: ${DIRECTUS_KEY}
+      SECRET: ${DIRECTUS_SECRET}
+      DB_CLIENT: pg
+      DB_HOST: database
+      DB_PORT: "5432"
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      PUBLIC_URL: http://cms.localhost
+      FILES_MAX_UPLOAD_SIZE: "10MB"
+      FILES_MIME_TYPE_ALLOW_LIST: "image/jpeg,image/png,image/webp,application/pdf"
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1:8055/server/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - edge
+      - data
+
+  database:
+    image: postgres:17
+    volumes:
+      - ./cms/data/database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --host=localhost --username=$$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - data
+
+  backup:
+    image: postgres:17
+    entrypoint: ["/bin/sh", "/scripts/backup-loop.sh"]
+    environment:
+      PGHOST: database
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+    volumes:
+      - ./cms/backups:/backups
+      - ./cms/uploads:/uploads:ro
+      - ./scripts/backup-loop.sh:/scripts/backup-loop.sh:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - data
+
+networks:
+  edge:
+  data:
+    internal: true

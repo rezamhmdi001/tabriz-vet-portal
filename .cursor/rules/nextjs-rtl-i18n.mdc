@@ -1,0 +1,49 @@
+---
+description: Bilingual /fa and /en routing, TranslationUnavailable, logical CSS, local Vazirmatn, and WCAG 2.2 AA.
+globs: ["web/**/*.tsx", "web/**/*.css"]
+alwaysApply: true
+---
+
+# Locale, RTL, and accessibility
+
+Public routes live under `web/app/[locale]/` with `fa` (default, `dir="rtl"`, `lang="fa"`) and `en` (`dir="ltr"`, `lang="en"`). Unprefixed pages redirect to `/fa`. API routes stay outside `[locale]`.
+
+Load Vazirmatn from `web/public/fonts/Vazirmatn-Variable.woff2` with `@font-face`. `next/font/google` and any Google Fonts stylesheet are forbidden. `/fa` enables font feature `ss01` for ordinary UI numerals. Phones, emails, ORCID, and slugs stay Western digits inside `<bdi dir="ltr">`.
+
+## TranslationUnavailable
+
+`/en` never uses Persian as fallback copy. Lists, cards, menus, and search omit rows with an empty English name.
+
+If the slug exists, is `published`, and has no English name, render `TranslationUnavailable` with `robots: { index: false, follow: true }`. Explain in English that the page is available in Persian only. Buttons go to the `/fa/...` URL and to `/en`.
+
+Call `notFound()` only when the slug is missing or not `published`.
+
+```tsx
+// Forbidden on /en
+<p>{page.title_fa}</p>
+
+// Required when title_en is empty and the row is published
+<TranslationUnavailable persianHref={`/fa/news/${slug}`} />
+```
+
+## Logical CSS
+
+Use `ms-*`, `me-*`, `ps-*`, `pe-*`, `start-*`, `end-*`, `text-start`, `text-end`, `border-s-*`, `border-e-*`.
+
+Reject `ml-*`, `mr-*`, `pl-*`, `pr-*`, `left-*`, `right-*`, `text-left`, `text-right`, `border-l-*`, `border-r-*`, `float-left`, `float-right`, and `space-x-*`. Prefer `gap`. Mirror directional icons on `/fa` (arrows, chevrons). Do not mirror logos or portraits.
+
+```tsx
+// Forbidden
+<div className="ml-4 text-left" />
+// Required
+<div className="ms-4 text-start" />
+```
+
+## WCAG 2.2 AA
+
+- First focusable control is a skip link to `#content`. The label is Persian on `/fa` and "Skip to main content" on `/en`. `<main id="content" tabIndex={-1}>`.
+- `:focus-visible` is clearly visible against the surface behind it. Sticky bars must not cover the focused element.
+- Interactive targets are at least 24×24px. Inline text links are exempt.
+- Normal text contrast is at least 4.5:1. Large text is at least 3:1.
+- Layouts work from 320px upward: tables, menus, faculty cards, and forms.
+- Decorative icons have an empty accessible name. Informative icons have a text alternative.

@@ -1,0 +1,12 @@
+{
+  "name": "directus-extension-site-reader-published",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Limits the Site Reader role to published items. Directus 12 Core cannot store custom permission rules.",
+  "directus:extension": {
+    "type": "hook",
+    "path": "index.js",
+    "source": "index.js",
+    "host": "^12.5.0"
+  }
+}

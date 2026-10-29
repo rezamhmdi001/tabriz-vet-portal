@@ -1,0 +1,42 @@
+---
+description: Server-only secrets, no clinical data, Zod validation, honeypot and IP rate limits, schema snapshots in Git.
+alwaysApply: true
+---
+
+# Security and privacy
+
+Risk level A: a public academic site. Out of scope: electronic clinical records, online booking, visitor accounts, and payments. Teaching-hospital pages describe services, hours, location, and phone.
+
+## Secrets
+
+`web/lib/directus.ts` and `web/lib/schema-org.ts` start with `import "server-only"`.
+
+Server-only: `DIRECTUS_URL`, `DIRECTUS_READ_TOKEN`, `REVALIDATE_SECRET`, Postgres credentials, Directus admin credentials, backup credentials.
+
+`NEXT_PUBLIC_SITE_URL` is the only public variable. Never create `NEXT_PUBLIC_DIRECTUS_READ_TOKEN`, `NEXT_PUBLIC_REVALIDATE_SECRET`, or `NEXT_PUBLIC_DIRECTUS_URL`.
+
+```ts
+// Forbidden
+const token = process.env.NEXT_PUBLIC_DIRECTUS_READ_TOKEN
+<img src={`${directusUrl}/assets/${id}?access_token=${token}`} />
+
+// Required
+const token = process.env.DIRECTUS_READ_TOKEN
+const src = getAssetUrl(id, "card") // same-origin, no token in the URL
+```
+
+The Next.js service does not receive `POSTGRES_*` or `DIRECTUS_ADMIN_*`. Compare `x-revalidate-secret` in constant time and do not log it.
+
+## Data
+
+No patient, client, or animal clinical records in the database, source, tests, fixtures, or prompts. Dev and test content is synthetic. Do not invent ORCID, Scholar, phone, or email values.
+
+The contact handler validates with Zod, rejects a filled honeypot with the same response as success, and rate-limits by IP (429). Do not add an external CAPTCHA. Do not add clinical fields to the form.
+
+Image delivery uses the WebP presets so EXIF, including GPS, is stripped. PDFs are not transcoded.
+
+## Schema in Git
+
+Snapshot Directus to `cms/schema/snapshot.yaml` and commit it with the type update. `cms/data/` and `cms/uploads/` stay gitignored. The Public Directus role has no permissions. Site Reader reads `published` rows only.
+
+Do not add collections while Gate G0 in `ARCHITECTURE.md` is open.

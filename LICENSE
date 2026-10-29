@@ -1,0 +1,7 @@
+Copyright (c) 2026 Islamic Azad University, Tabriz Branch — Faculty of Veterinary Medicine
+
+All rights reserved.
+
+Source in this repository implements the faculty's public website and its self-hosted content stack. Redistribution, commercial use, or deployment outside authorized university infrastructure requires written permission from the faculty or university rights holder.
+
+Third-party dependencies remain under their respective licenses (see `web/package.json` and `web/node_modules` after install).

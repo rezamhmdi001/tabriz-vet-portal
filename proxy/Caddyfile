@@ -1,0 +1,11 @@
+# Local proxy. Only this service publishes ports 80 and 443.
+# Production replaces these hostnames and mounts the university TLS certificate.
+# Until that certificate exists, the public and admin sites are served on port 80.
+
+http://localhost, http://127.0.0.1 {
+	reverse_proxy web:3000
+}
+
+http://cms.localhost {
+	reverse_proxy cms:8055
+}

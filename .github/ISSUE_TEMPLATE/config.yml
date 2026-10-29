@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Architecture and gates
+    url: https://github.com/rezamhmdi001/tabriz-vet-portal/blob/main/ARCHITECTURE.md
+    about: Product behavior and release gates (G0–G3)
+  - name: Agent working rules
+    url: https://github.com/rezamhmdi001/tabriz-vet-portal/blob/main/AGENTS.md
+    about: Cursor and Hermes conventions for this repository

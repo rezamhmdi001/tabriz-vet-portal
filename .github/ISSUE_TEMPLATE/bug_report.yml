@@ -1,0 +1,61 @@
+name: Bug report
+description: Something broken in the portal, CMS integration, or local stack
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste tokens, passwords, or real contact details. Use synthetic examples only.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Public site (`web/`)
+        - Directus / CMS
+        - Docker / deployment
+        - Documentation
+    validations:
+      required: true
+
+  - type: input
+    id: locale
+    attributes:
+      label: Locale and URL
+      description: e.g. `/fa/search` or `/en/people/example-slug`
+      placeholder: /fa/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or console output
+      description: Redact secrets before posting.
+      render: shell
