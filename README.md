@@ -63,7 +63,7 @@ Each phase starts when it is explicitly requested. The release checklist is in `
 
 ## Quick start (web only)
 
-Prerequisites: Node.js 20+, npm.
+Prerequisites: Node.js 22+ (matches CI), npm.
 
 ```bash
 git clone https://github.com/rezamhmdi001/tabriz-vet-portal.git
