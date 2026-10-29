@@ -1,5 +1,7 @@
 # Faculty of Veterinary Medicine Portal
 
+[![CI](https://github.com/rezamhmdi001/tabriz-vet-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/rezamhmdi001/tabriz-vet-portal/actions/workflows/ci.yml)
+
 Official academic and informational website for the Faculty of Veterinary Medicine, Islamic Azad University, Tabriz Branch (`IAU-TBZ-VET-PORTAL-2026`).
 
 The public site is a bilingual Next.js app (`/fa` RTL, `/en` LTR). Editors work in self-hosted Directus 12.5. PostgreSQL 17 stays on the internal Docker network. Production is a five-service Compose stack (`proxy`, `web`, `cms`, `database`, `backup`) on a university-controlled server. TLS at the proxy, and an encrypted off-server backup, are added when a certificate and a destination exist. Until then the backup script writes a local unencrypted database dump and uploads archive, and deletes files older than 14 days.

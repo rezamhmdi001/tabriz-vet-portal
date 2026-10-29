@@ -37,17 +37,6 @@ Public pages must stay **published-only**, **server-side Directus access** via `
 
 Use the PR template. Keep schema changes paired with `cms/schema/snapshot.yaml` and TypeScript types in the same change.
 
-## GitHub Actions
-
-The workflow file lives at `.github/workflows/ci.yml`. GitHub rejects the first push of workflow files unless the CLI token includes the `workflow` scope. If you maintain this repo, run:
-
-```bash
-gh auth refresh --hostname github.com -s workflow
-git add .github/workflows/ci.yml
-git commit -m "ci: add web lint, test, and build workflow"
-git push
-```
-
 ## Security
 
 Report suspected vulnerabilities privately to the project maintainers. Do not open public issues with exploit details or production credentials.
